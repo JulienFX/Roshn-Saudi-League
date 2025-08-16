@@ -5,6 +5,8 @@ import html
 import queue
 import streamlit as st
 import streamlit.components.v1 as components
+import datetime
+
 # -----------------------------
 # CONFIGURATION
 # OAuth = Protocole d'autorisation
@@ -18,7 +20,7 @@ SERVER = 'irc.chat.twitch.tv'
 PORT = 6667
 NICKNAME = 'adr_blody'
 TOKEN = 'oauth:6w3aii5ev4gtpzxls1njwi916wvayl'
-CHANNEL = '#adilrami23'
+CHANNEL = '#Escolit0'
 
 # -----------------------------
 # SESSION STATE
@@ -71,7 +73,9 @@ def listen_to_chat(sock: socket.socket, q: queue.Queue):
                     continue
 
                 # 🔹 On pousse le message dans la queue
-                q.put(f"{username}: {message}")
+                timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                q.put(f"[{timestamp}] {username}: {message}")
+
 
 # -----------------------------
 # CONNEXION
