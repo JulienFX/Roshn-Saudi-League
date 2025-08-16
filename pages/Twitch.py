@@ -1,6 +1,10 @@
 import socket
-import streamlit as st
 import threading
+import time
+import html
+import queue
+import streamlit as st
+import streamlit.components.v1 as components
 # -----------------------------
 # CONFIGURATION
 # OAuth = Protocole d'autorisation
@@ -10,119 +14,141 @@ import threading
 # CLIENT_ID = "wks1t7o5x4iei3hd92k6b819wi1myv"
 #ACCESS_TOKEN = "oauth:6w3aii5ev4gtpzxls1njwi916wvayl"
 
-server = 'irc.chat.twitch.tv'
-port = 6667
-nickname = 'adr_blody'
-token = 'oauth:6w3aii5ev4gtpzxls1njwi916wvayl'
-channel = '#adilrami23'
+SERVER = 'irc.chat.twitch.tv'
+PORT = 6667
+NICKNAME = 'adr_blody'
+TOKEN = 'oauth:6w3aii5ev4gtpzxls1njwi916wvayl'
+CHANNEL = '#adilrami23'
 
-sock = socket.socket()
-sock.connect((server, port))
-sock.send(f"PASS {token}\n".encode('utf-8'))
-sock.send(f"NICK {nickname}\n".encode('utf-8'))
-sock.send(f"JOIN {channel}\n".encode('utf-8'))
-
-# Initialisation session_state AVANT tout
-if 'messages' not in st.session_state:
+# -----------------------------
+# SESSION STATE
+# -----------------------------
+if "messages" not in st.session_state:
     st.session_state.messages = []
-if 'sock' not in st.session_state:
+if "sock" not in st.session_state:
     st.session_state.sock = None
+if "listener_started" not in st.session_state:
+    st.session_state.listener_started = False
 
-# Fonction d'écoute en continu
-def listen_to_chat(sock):
+# Une queue thread-safe pour transférer les messages
+if "msg_queue" not in st.session_state:
+    st.session_state.msg_queue = queue.Queue()
+
+# -----------------------------
+# THREAD : écouter IRC
+# -----------------------------
+def listen_to_chat(sock: socket.socket, q: queue.Queue):
+    buffer = ""
     while True:
         try:
-            resp = sock.recv(2048).decode('utf-8')
-            print('hey')
+            data = sock.recv(4096)
+            if not data:
+                break
+            buffer += data.decode("utf-8", errors="ignore")
         except Exception:
             break
 
-        for line in resp.split("\r\n"):
-            if line == "":
-                print("vide")
+        lines = buffer.split("\r\n")
+        buffer = lines.pop()
+
+        for line in lines:
+            if not line:
                 continue
+
             if line.startswith("PING"):
-                sock.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
-                print(resp)
-            elif "PRIVMSG" in line:
-                print('PRIVMSG')
-                username = line.split('!', 1)[0][1:]
-                message = line.split('PRIVMSG', 1)[1].split(':', 1)[1]
-                # Ajout du message
-                print(f"{username}: {message}")
+                try:
+                    sock.sendall(b"PONG :tmi.twitch.tv\r\n")
+                except Exception:
+                    return
+                continue
 
-# Connexion au chat une seule fois
-if st.session_state.sock is None:
-    sock = socket.socket()
-    sock.connect((server, port))
-    sock.send(f"PASS {token}\r\n".encode('utf-8'))
-    sock.send(f"NICK {nickname}\r\n".encode('utf-8'))
-    sock.send(f"JOIN {channel}\r\n".encode('utf-8'))
-    st.session_state.sock = sock
+            if " PRIVMSG " in line:
+                try:
+                    prefix, payload = line.split(" PRIVMSG ", 1)
+                    username = prefix.split("!", 1)[0][1:]
+                    message = payload.split(":", 1)[1]
+                except Exception:
+                    continue
 
-    # Lancer le thread
-    threading.Thread(target=listen_to_chat, args=(sock,), daemon=True).start()
+                # 🔹 On pousse le message dans la queue
+                q.put(f"{username}: {message}")
 
-# Affichage
-st.title(f"Twitch Chat {channel}")
-for msg in st.session_state.messages[-20:]:
-    st.write(msg)
+# -----------------------------
+# CONNEXION
+# -----------------------------
+def ensure_connection():
+    if st.session_state.sock is None:
+        s = socket.socket()
+        s.connect((SERVER, PORT))
+        s.sendall(f"PASS {TOKEN}\r\n".encode("utf-8"))
+        s.sendall(f"NICK {NICKNAME}\r\n".encode("utf-8"))
+        s.sendall(f"JOIN {CHANNEL}\r\n".encode("utf-8"))
+        st.session_state.sock = s
 
-# Rafraîchit la page toutes les secondes
-# st.rerun()
+    if not st.session_state.listener_started:
+        t = threading.Thread(
+            target=listen_to_chat,
+            args=(st.session_state.sock, st.session_state.msg_queue),
+            daemon=True,
+        )
+        t.start()
+        st.session_state.listener_started = True
 
-# # Queue pour partager les messages avec Streamlit
-# chat_queue = queue.Queue()
+ensure_connection()
 
-# # -----------------------------
-# # FONCTION POUR LE BOT SOCKET
-# def twitch_socket_bot():
-#     sock = ssl.wrap_socket(socket.socket())  # socket SSL
-#     sock.connect((SERVER, PORT))
-#     sock.send(f"PASS {ACCESS_TOKEN}\r\n".encode('utf-8'))
-#     sock.send(f"NICK {NICKNAME}\r\n".encode('utf-8'))
-#     sock.send(f"JOIN {CHANNEL}\r\n".encode('utf-8'))
+# -----------------------------
+# MAIN THREAD : vider la queue dans session_state.messages
+# -----------------------------
+while not st.session_state.msg_queue.empty():
+    msg = st.session_state.msg_queue.get_nowait()
+    st.session_state.messages.append(msg)
 
-#     while True:
-#         resp = sock.recv(2048).decode('utf-8')
-#         if resp.startswith('PING'):
-#             sock.send("PONG\n".encode('utf-8'))
-#         elif len(resp) > 0:
-#             try:
-#                 username, channel, message = re.search(
-#                     r':(.*)\!.*@.*\.tmi\.twitch\.tv PRIVMSG #(.*) :(.*)', resp
-#                 ).groups()
-#                 chat_queue.put({
-#                     'datetime': datetime.now(),
-#                     'username': username,
-#                     'message': message
-#                 })
-#             except Exception:
-#                 pass
+# -----------------------------
+# UI : chatbox stylée
+# -----------------------------
+st.title(f"Twitch Chat {CHANNEL}")
 
-# # -----------------------------
-# # LANCER LE BOT DANS UN THREAD
-# if "bot_started" not in st.session_state:
-#     threading.Thread(target=twitch_socket_bot, daemon=True).start()
-#     st.session_state.bot_started = True
+def render_messages_html(msgs):
+    items = "\n".join(
+        f"<div class='msg'><span class='user'>{html.escape(m.split(':',1)[0])}</span>: "
+        f"{html.escape(m.split(':',1)[1].lstrip() if ':' in m else m)}</div>"
+        for m in msgs
+    )
+    return f"""
+    <div id="chatbox">
+        {items}
+    </div>
+    <script>
+        const box = document.getElementById('chatbox');
+        if (box) {{
+            box.scrollTop = box.scrollHeight;
+        }}
+    </script>
+    <style>
+        #chatbox {{
+            height: 60vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(4px);
+            font-family: system-ui, sans-serif;
+        }}
+        .msg {{ margin: 6px 0; line-height: 1.35; word-wrap: break-word; }}
+        .user {{ font-weight: 600; opacity: .9; }}
+    </style>
+    """
 
-# # -----------------------------
-# # STREAMLIT - affichage du chat
-# st.title(f"💬 Chat Twitch - {CHANNEL}")
-# if "messages" not in st.session_state:
-#     st.session_state.messages = []
+html_chunk = render_messages_html(st.session_state.messages[-200:])
+components.html(html_chunk, height=420, scrolling=False)
 
-# chat_placeholder = st.empty()
-
-# # Mise à jour en continu
-# while True:
-#     while not chat_queue.empty():
-#         st.session_state.messages.append(chat_queue.get())
-
-#     chat_text = "\n".join([
-#         f"[{m['datetime'].strftime('%H:%M:%S')}] {m['username']}: {m['message']}" 
-#         for m in st.session_state.messages[-20:]
-#     ])
-#     chat_placeholder.text(chat_text)
-    
-#     time.sleep(1)
+# -----------------------------
+# Auto-refresh
+# -----------------------------
+try:
+    from streamlit_autorefresh import st_autorefresh
+    st_autorefresh(interval=1000, key="twitch_refresh")
+except ImportError:
+    time.sleep(1)
+    st.rerun()
