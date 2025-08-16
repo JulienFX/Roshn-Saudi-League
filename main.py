@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from data import match_info, stats_equipes, stats_joueurs, df_lineup
+from data import match_info, stats_joueurs, df_lineup
 
 # CSS - La partie qui permet de faire en sorte que l'affichage s'étale sur toute la largeur d'écran disponible
 st.markdown(
