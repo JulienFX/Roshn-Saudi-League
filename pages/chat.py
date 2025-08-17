@@ -6,6 +6,7 @@ import queue
 import streamlit as st
 import streamlit.components.v1 as components
 import datetime
+import re
 
 # -----------------------------
 # CONFIGURATION
@@ -36,6 +37,9 @@ if "listener_started" not in st.session_state:
 if "msg_queue" not in st.session_state:
     st.session_state.msg_queue = queue.Queue()
 
+
+# Config écran 
+# st.set_page_config(layout="wide")
 # -----------------------------
 # THREAD : écouter IRC
 # -----------------------------
@@ -108,44 +112,76 @@ while not st.session_state.msg_queue.empty():
     st.session_state.messages.append(msg)
 
 # -----------------------------
-# UI : chatbox stylée
+# UI : Titre + Chat centrés (titre + box alignés)
 # -----------------------------
-st.title(f"Twitch Chat {CHANNEL}")
+WRAP_W = 1000  # <- ajuste ici (ex: 1000, 1100...)
+
+line_re = re.compile(r'^\[(\d{2}:\d{2}:\d{2})\]\s+([^:]+):\s?(.*)$')
 
 def render_messages_html(msgs):
-    items = "\n".join(
-        f"<div class='msg'><span class='user'>{html.escape(m.split(':',1)[0])}</span>: "
-        f"{html.escape(m.split(':',1)[1].lstrip() if ':' in m else m)}</div>"
-        for m in msgs
-    )
+    items_html = []
+    for m in msgs:
+        m = m.strip()
+        mt = line_re.match(m)
+        if mt:
+            t, user, text = mt.groups()
+            items_html.append(
+                f"<div class='msg'>"
+                f"<span class='time'>[{html.escape(t)}]</span> "
+                f"<span class='user'>{html.escape(user)}</span>: "
+                f"<span class='text'>{html.escape(text)}</span>"
+                f"</div>"
+            )
+        else:
+            items_html.append(f"<div class='msg'><span class='text'>{html.escape(m)}</span></div>")
+
+    items = "\n".join(items_html)
     return f"""
-    <div id="chatbox">
-        {items}
+    <div id="wrap">
+      <h1 id="title">💬 Twitch Chat</h1>
+      <div id="chatbox">{items}</div>
     </div>
+
     <script>
-        const box = document.getElementById('chatbox');
-        if (box) {{
-            box.scrollTop = box.scrollHeight;
-        }}
+      const box = document.getElementById('chatbox');
+      if (box) {{ box.scrollTop = box.scrollHeight; }}
     </script>
+
     <style>
-        #chatbox {{
-            height: 60vh;
-            overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 12px 14px;
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(4px);
-            font-family: system-ui, sans-serif;
-        }}
-        .msg {{ margin: 6px 0; line-height: 1.35; word-wrap: break-word; }}
-        .user {{ font-weight: 600; opacity: .9; }}
+      #wrap {{
+        max-width: {WRAP_W}px;
+        margin: 0 auto;
+        overflow: visible;
+      }}
+      #title {{
+        text-align: center;
+        margin-bottom: 15px;
+      }}
+      #chatbox {{
+        width: 100%;              /* prend 100% de #wrap */
+        height: 70vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+        border-top: 1px solid blue;
+        border-bottom: 1px solid blue;
+        border-radius: 50px;
+        padding: 30px 18px;
+        background: white;
+        font-family: system-ui, sans-serif;
+        font-size: 1rem;
+        color: black;
+        text-align: left;
+      }}
+      .msg {{ margin: 8px 0; line-height: 1.45; word-wrap: break-word; }}
+      .time {{ color: purple; font-weight: 700; margin-right: 6px; }}
+      .user {{ color: #d40000; font-weight: 700; }}
+      .text {{ color: black; }}
     </style>
     """
 
-html_chunk = render_messages_html(st.session_state.messages[-200:])
-components.html(html_chunk, height=420, scrolling=False)
+# 10 derniers messages
+html_chunk = render_messages_html(st.session_state.messages[-10:])
+components.html(html_chunk, height=600, width=WRAP_W, scrolling=False)
 
 # -----------------------------
 # Auto-refresh
