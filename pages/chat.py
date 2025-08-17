@@ -20,26 +20,34 @@ import re
 SERVER = 'irc.chat.twitch.tv'
 PORT = 6667
 NICKNAME = 'adr_blody'
-TOKEN = 'oauth:fcxs5h0q1itzb5rdad7lcyfhoi5ta7'
-CHANNEL = '#areliann'
+TOKEN = 'oauth:y0akalbrniba9lqv1w7cecyqvqgu4e'
+CHANNEL = '#xo_trixy'
+
+# Regex pour détecter les questions valides
+QUESTION_REGEX = re.compile(
+    r'(?:^|\s)(\S{2,}\s*\?{1,3}(?:\s|$|[^\w\?]))', 
+    flags=re.IGNORECASE
+)
+
+# Regex pour parser les messages IRC
+LINE_REGEX = re.compile(r'^\[(\d{2}:\d{2}:\d{2})\]\s+([^:]+):\s?(.*)$')
 
 # -----------------------------
 # SESSION STATE
 # -----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "questions" not in st.session_state:
+    st.session_state.questions = []
 if "sock" not in st.session_state:
     st.session_state.sock = None
 if "listener_started" not in st.session_state:
     st.session_state.listener_started = False
-
-# Une queue thread-safe pour transférer les messages
 if "msg_queue" not in st.session_state:
     st.session_state.msg_queue = queue.Queue()
+if "max_questions" not in st.session_state:
+    st.session_state.max_questions = 10  # Nombre max de questions à afficher
 
-
-# Config écran 
-# st.set_page_config(layout="wide")
 # -----------------------------
 # THREAD : écouter IRC
 # -----------------------------
@@ -76,10 +84,8 @@ def listen_to_chat(sock: socket.socket, q: queue.Queue):
                 except Exception:
                     continue
 
-                # 🔹 On pousse le message dans la queue
                 timestamp = datetime.datetime.now().strftime("%H:%M:%S")
                 q.put(f"[{timestamp}] {username}: {message}")
-
 
 # -----------------------------
 # CONNEXION
@@ -105,24 +111,29 @@ def ensure_connection():
 ensure_connection()
 
 # -----------------------------
-# MAIN THREAD : vider la queue dans session_state.messages
+# TRAITEMENT DES MESSAGES
 # -----------------------------
 while not st.session_state.msg_queue.empty():
     msg = st.session_state.msg_queue.get_nowait()
     st.session_state.messages.append(msg)
+    mt = LINE_REGEX.match(msg.strip())
+    if mt:
+        _, _, text = mt.groups()
+        if QUESTION_REGEX.search(text):  # Filtrage des questions
+            st.session_state.questions.append(msg)
+            # Garde seulement les N dernières questions
+            st.session_state.questions = st.session_state.questions[-st.session_state.max_questions:]
 
 # -----------------------------
-# UI : Titre + Chat centrés (titre + box alignés)
+# AFFICHAGE
 # -----------------------------
-WRAP_W = 1000  # <- ajuste ici (ex: 1000, 1100...)
-
-line_re = re.compile(r'^\[(\d{2}:\d{2}:\d{2})\]\s+([^:]+):\s?(.*)$')
+WRAP_W = 1000
 
 def render_messages_html(msgs):
     items_html = []
     for m in msgs:
         m = m.strip()
-        mt = line_re.match(m)
+        mt = LINE_REGEX.match(m)
         if mt:
             t, user, text = mt.groups()
             items_html.append(
@@ -138,7 +149,7 @@ def render_messages_html(msgs):
     items = "\n".join(items_html)
     return f"""
     <div id="wrap">
-      <h1 id="title">💬 Twitch Chat</h1>
+      <h1 id="title">💬 Questions du Chat</h1>
       <div id="chatbox">{items}</div>
     </div>
 
@@ -158,7 +169,7 @@ def render_messages_html(msgs):
         margin-bottom: 15px;
       }}
       #chatbox {{
-        width: 100%;              /* prend 100% de #wrap */
+        width: 100%;
         height: 70vh;
         overflow-y: auto;
         box-sizing: border-box;
@@ -179,12 +190,15 @@ def render_messages_html(msgs):
     </style>
     """
 
-# 10 derniers messages
-html_chunk = render_messages_html(st.session_state.messages[-10:])
-components.html(html_chunk, height=600, width=WRAP_W, scrolling=False)
+components.html(
+    render_messages_html(st.session_state.questions),
+    height=600,
+    width=WRAP_W,
+    scrolling=False
+)
 
 # -----------------------------
-# Auto-refresh
+# AUTO-REFRESH
 # -----------------------------
 try:
     from streamlit_autorefresh import st_autorefresh
