@@ -148,4 +148,3 @@ with col7:
 # threading.Thread(target=run_bot, daemon=True).start()
 
 # st.write("Bot Twitch lancé… les questions apparaîtront ici quand il y en aura.")
-
