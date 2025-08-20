@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from data import match_info, stats_joueurs, df_lineup
+from data import match_info, stats_joueurs, df_lineup,entraineurs,remplacants
+
 
 # CSS - La partie qui permet de faire en sorte que l'affichage s'étale sur toute la largeur d'écran disponible
 st.markdown(
@@ -129,14 +130,35 @@ with tab1:
         st.plotly_chart(fig, use_container_width=True)
 
     with col7:
-        st.subheader("📋 Stats joueur")
-        player_name = st.selectbox("Joueur :", df_lineup["Nom"].tolist(), key="player_select")
-        player_data = stats_joueurs[stats_joueurs["Nom"] == player_name]
-        if not player_data.empty:
-            st.write(f"**Equipe :** {player_data.iloc[0]['Equipe']}")
-            st.write(f"**Buts :** {player_data.iloc[0]['Buts']}")
-            st.write(f"**Passes :** {player_data.iloc[0]['Passes']}")
-            st.write(f"**Dribbles :** {player_data.iloc[0]['Dribbles']}")
+        st.subheader("👔 Entraîneurs")
+        
+        # Création de deux colonnes pour les entraîneurs
+        col_entraineur1, col_entraineur2 = st.columns(2)
+        
+        with col_entraineur1:
+            st.markdown("**PSG**")
+            st.write(entraineurs["PSG"])
+        
+        with col_entraineur2:
+            st.markdown("**Barça**")
+            st.write(entraineurs["Barça"])
+        
+        st.markdown("---")
+        
+        st.subheader("🔄 Remplaçants")
+        
+        # Création de deux colonnes pour les remplaçants
+        col_remplacants1, col_remplacants2 = st.columns(2)
+        
+        with col_remplacants1:
+            st.markdown("**PSG**")
+            for remplacant in remplacants["PSG"]:
+                st.write(f"- {remplacant}")
+        
+        with col_remplacants2:
+            st.markdown("**Barça**")
+            for remplacant in remplacants["Barça"]:
+                st.write(f"- {remplacant}")
 
 with tab2:
     st.header("Page 2")

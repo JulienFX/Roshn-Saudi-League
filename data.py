@@ -54,4 +54,16 @@ lineup = [
   {"Nom": "Lewandowski", "Equipe": "Barça", "Poste": "Avant-centre", "PosX": 85, "PosY": 65},
 ]
 
+##data 
+# Données fictives pour les entraîneurs et remplaçants
+entraineurs = {
+    "PSG": "Christophe Galtier",
+    "Barça": "Xavi Hernandez"
+}
+
+remplacants = {
+    "PSG": ["Ramos", "Donnarumma", "Soler", "Ekitike", "Sanches"],
+    "Barça": ["Raphinha", "Torres", "Kessie", "Christensen", "Pena"]
+}
+
 df_lineup = pd.DataFrame(lineup) # chargement des données pour la composition avec les joueurs 
