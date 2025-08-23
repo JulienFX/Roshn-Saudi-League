@@ -84,95 +84,90 @@ with tab1:
 
     st.markdown("---")
 
-    # --- ÉTAGE 3 : TERRAIN + STATS JOUEUR ---
-    col6, col7 = st.columns([4,2])
-    with col6:
-        st.subheader("🖼️ Lineup")
+# --- ÉTAGE 2 : LINEUP ---
+    st.subheader("🖼️ Lineup")
+    fig = px.scatter(
+        df_lineup,
+        x='PosX', y='PosY',
+        color='Equipe', text='Nom',
+        hover_data=['Poste'],
+        color_discrete_map={team1: 'blue', team2: 'red'},
+        height=500, width=700
+    )
 
-        fig = px.scatter(
-            df_lineup,
-            x='PosX', y='PosY',
-            color='Equipe', text='Nom',
-            hover_data=['Poste'],
-            color_discrete_map={team1: 'blue', team2: 'red'},
-            height=500, width=700
-        )
+    # Ajustement des points/joueurs
+    fig.update_traces(
+        textposition='top center',
+        marker=dict(size=22, line=dict(width=2, color='black')),
+        textfont=dict(color='black', size=16)
+    )
+    fig.update_xaxes(
+        range=[0, 100],
+        showticklabels=False,
+        showgrid=False,
+        zeroline=False
+    )
 
-        # Ajustement des points/joueurs
-        fig.update_traces(
-            textposition='top center',
-            marker=dict(size=22, line=dict(width=2, color='black')),
-            textfont=dict(color='black', size=16)
-        )
-        fig.update_xaxes(
-            range=[0, 100],
-            showticklabels=False,
-            showgrid=False,
-            zeroline=False
-        )
+    fig.update_yaxes(
+        autorange="reversed",
+        range=[0, 100],
+        showticklabels=False,
+        showgrid=False,
+        zeroline=False
+    )
 
-        fig.update_yaxes(
-            autorange="reversed",
-            range=[0, 100],
-            showticklabels=False,
-            showgrid=False,
-            zeroline=False
-        )
+    # Axes & fond
+    fig.update_layout(
+        plot_bgcolor='#F7F7F7',
+        margin=dict(l=5, r=5, t=5, b=5),
+    )
 
-        # Axes & fond
-        fig.update_layout(
-            plot_bgcolor='#F7F7F7',
-            margin=dict(l=5, r=5, t=5, b=5),
-        )
+    # Contour du terrain
+    fig.add_shape(type="rect", x0=0, y0=0, x1=100, y1=100, line=dict(color="#E3E3E3", width=3), layer="below")
 
-        # Contour du terrain
-        fig.add_shape(type="rect", x0=0, y0=0, x1=100, y1=100, line=dict(color="#E3E3E3", width=3), layer="below")
+    # Ligne médiane
+    fig.add_shape(type="line", x0=50, y0=0, x1=50, y1=100, line=dict(color="#E3E3E3", width=2), layer="below")
 
-        # Ligne médiane
-        fig.add_shape(type="line", x0=50, y0=0, x1=50, y1=100, line=dict(color="#E3E3E3", width=2), layer="below")
+    # Rond central
+    fig.add_shape(type="circle", x0=40, y0=40, x1=60, y1=60, line=dict(color="#E3E3E3", width=2), layer="below")
 
-        # Rond central
-        fig.add_shape(type="circle", x0=40, y0=40, x1=60, y1=60, line=dict(color="#E3E3E3", width=2), layer="below")
+    # Point central
+    fig.add_shape(type="circle", x0=49.5, y0=49.5, x1=50.5, y1=50.5, fillcolor="#E3E3E3", line=dict(color="#E3E3E3"), layer="below")
 
-        # Point central
-        fig.add_shape(type="circle", x0=49.5, y0=49.5, x1=50.5, y1=50.5, fillcolor="#E3E3E3", line=dict(color="#E3E3E3"), layer="below")
+    # Surfaces de réparation gauche et droite
+    fig.add_shape(type="rect", x0=0, y0=31, x1=10, y1=69, line=dict(color="#E3E3E3", width=2), layer="below")
+    fig.add_shape(type="rect", x0=90, y0=31, x1=100, y1=69, line=dict(color="#E3E3E3", width=2), layer="below")
 
-        # Surfaces de réparation gauche et droite
-        fig.add_shape(type="rect", x0=0, y0=31, x1=10, y1=69, line=dict(color="#E3E3E3", width=2), layer="below")
-        fig.add_shape(type="rect", x0=90, y0=31, x1=100, y1=69, line=dict(color="#E3E3E3", width=2), layer="below")
+    # Petites surfaces gauche et droite
+    fig.add_shape(type="rect", x0=0, y0=45, x1=2, y1=55, line=dict(color="#E3E3E3", width=2), layer="below")
+    fig.add_shape(type="rect", x0=98, y0=45, x1=100, y1=55, line=dict(color="#E3E3E3", width=2), layer="below")
 
-        # Petites surfaces gauche et droite
-        fig.add_shape(type="rect", x0=0, y0=45, x1=2, y1=55, line=dict(color="#E3E3E3", width=2), layer="below")
-        fig.add_shape(type="rect", x0=98, y0=45, x1=100, y1=55, line=dict(color="#E3E3E3", width=2), layer="below")
+    st.plotly_chart(fig, use_container_width=True)
 
-        st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-    with col7:
-        st.subheader("👔 Entraîneurs")
-        
-        col_entraineur1, col_entraineur2 = st.columns(2)
-        
-        with col_entraineur1:
-            st.markdown(f"**{team1}**")
-            st.write(entraineurs[team1])
-        
-        with col_entraineur2:
-            st.markdown(f"**{team2}**")
-            st.write(entraineurs[team2])
-        
+    # --- ÉTAGE 3 : ENTRAÎNEURS + REMPLAÇANTS ---
+    col_coach_sub1, col_coach_sub2 = st.columns(2)
+
+    with col_coach_sub1:
+        st.subheader("👔 Entraîneur")
+        st.markdown(f"**{team1}**")
+        st.write(entraineurs[team1])
+
         st.subheader("🔄 Remplaçants")
-        
-        col_remplacants1, col_remplacants2 = st.columns(2)
-        
-        with col_remplacants1:
-            st.markdown(f"**{team1}**")
-            for remplacant in remplacants[team1]:
-                st.write(f"- {remplacant}")
-        
-        with col_remplacants2:
-            st.markdown(f"**{team2}**")
-            for remplacant in remplacants[team2]:
-                st.write(f"- {remplacant}")
+        st.markdown(f"**{team1}**")
+        for remplacant in remplacants[team1]:
+            st.write(f"- {remplacant}")
+
+    with col_coach_sub2:
+        st.subheader("👔 Entraîneur")
+        st.markdown(f"**{team2}**")
+        st.write(entraineurs[team2])
+
+        st.subheader("🔄 Remplaçants")
+        st.markdown(f"**{team2}**")
+        for remplacant in remplacants[team2]:
+            st.write(f"- {remplacant}")
 
 with tab2:
     # --- En-tête avec animation ---

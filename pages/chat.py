@@ -20,8 +20,8 @@ import re
 SERVER = 'irc.chat.twitch.tv'
 PORT = 6667
 NICKNAME = 'adr_blody'
-TOKEN = 'oauth:y0akalbrniba9lqv1w7cecyqvqgu4e'
-CHANNEL = '#xo_trixy'
+TOKEN = 'oauth:sh8qeffr15b97xmbxvfz327d1aemvr'
+CHANNEL = '#zacknani'
 
 # Regex pour détecter les questions valides
 QUESTION_REGEX = re.compile(
@@ -149,7 +149,7 @@ def render_messages_html(msgs):
     items = "\n".join(items_html)
     return f"""
     <div id="wrap">
-      <h1 id="title">💬 Questions du Chat</h1>
+      <h1 id="title">💬 Questions du Chat - Twitch</h1>
       <div id="chatbox">{items}</div>
     </div>
 
