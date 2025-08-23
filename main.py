@@ -43,12 +43,12 @@ with tab1:
         st.markdown(
             f"""
             <div style='text-align:center; display:flex; justify-content:center; align-items:center;'>
-                <img src='https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg' style='height:24px; vertical-align:middle;'>
+                <img src='https://upload.wikimedia.org/wikipedia/ar/a/ac/Al_Nassr_FC_Logo.svg' style='height:36px; vertical-align:middle;'>
                 <h2 style='margin:0;'>{match_info['equipe1']} vs {match_info['equipe2']}</h2>
-                <img src='https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg' style='height:24px; vertical-align:middle;'>
+                <img src='https://upload.wikimedia.org/wikipedia/fr/7/70/Logo_Al-Ahli_FC_2025.svg' style='height:36px; vertical-align:middle;'>
             </div>
             <p style='text-align:center'>
-                📅 {match_info['date']} | 🏟️ {match_info['stade']} | ⚽ {match_info['cote']}
+                📅 {match_info['date']} | 🏟️ {match_info['stade']} | 🌡️ 31° | ⚽ {match_info['cote']}
             </p>
             """,
             unsafe_allow_html=True
@@ -66,7 +66,7 @@ with tab1:
             x='PosX', y='PosY',
             color='Equipe', text='Nom',
             hover_data=['Poste'],
-            color_discrete_map={team1: 'blue', 'Barça': 'red'},
+            color_discrete_map={team1: 'blue', team2: 'red'},
             height=500, width=700
         )
 
@@ -136,14 +136,12 @@ with tab1:
         col_entraineur1, col_entraineur2 = st.columns(2)
         
         with col_entraineur1:
-            st.markdown("**AL-NASSR**")
+            st.markdown(f"**{team1}**")
             st.write(entraineurs[team1])
         
         with col_entraineur2:
-            st.markdown("**Barça**")
-            st.write(entraineurs["Barça"])
-        
-        st.markdown("---")
+            st.markdown(f"**{team2}**")
+            st.write(entraineurs[team2])
         
         st.subheader("🔄 Remplaçants")
         
@@ -151,13 +149,13 @@ with tab1:
         col_remplacants1, col_remplacants2 = st.columns(2)
         
         with col_remplacants1:
-            st.markdown(team1)
+            st.markdown(f"**{team1}**")
             for remplacant in remplacants[team1]:
                 st.write(f"- {remplacant}")
         
         with col_remplacants2:
-            st.markdown("**Barça**")
-            for remplacant in remplacants["Barça"]:
+            st.markdown(f"**{team2}**")
+            for remplacant in remplacants[team2]:
                 st.write(f"- {remplacant}")
 
 with tab2:
