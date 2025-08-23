@@ -23,12 +23,15 @@ stats_equipes = pd.DataFrame({
 
 # Stats joueurs (pour top buteurs, passeurs, dribbleurs)
 stats_joueurs = pd.DataFrame([
-    {"Nom": "Mbappé", "Equipe": team1, "Buts": 12, "Passes": 5, "Dribbles": 30},
-    {"Nom": "Messi", "Equipe": team1, "Buts": 8, "Passes": 10, "Dribbles": 25},
-    {"Nom": "Neymar", "Equipe": team1, "Buts": 7, "Passes": 8, "Dribbles": 40},
-    {"Nom": "Lewandowski", "Equipe": team2, "Buts": 15, "Passes": 4, "Dribbles": 20},
-    {"Nom": "Fati", "Equipe": team2, "Buts": 5, "Passes": 6, "Dribbles": 22},
-    {"Nom": "Pedri", "Equipe": team2, "Buts": 3, "Passes": 9, "Dribbles": 18},
+    {"Nom": "Sadio Mané", "Equipe": team1, "Buts": 1, "Passes D": 0, "Dribbles": 1},
+    {"Nom": "Brozovic", "Equipe": team1, "Buts": 0, "Passes D": 1, "Dribbles": 2},
+    {"Nom": "Joao Felix", "Equipe": team1, "Buts": 1, "Passes D": 0, "Dribbles": 5},
+    {"Nom": "Cristiano Ronaldo", "Equipe": team1, "Buts": 0, "Passes D": 1, "Dribbles": 2},
+    {"Nom": "Kessié", "Equipe": team2, "Buts": 2, "Passes D": 0, "Dribbles": 1},
+    {"Nom": "Toney", "Equipe": team2, "Buts": 1, "Passes D": 0, "Dribbles": 1},
+    {"Nom": "Enzo Millot", "Equipe": team2, "Buts": 1, "Passes D": 0, "Dribbles": 1},
+    {"Nom": "Riyad Mahrez", "Equipe": team2, "Buts": 0, "Passes D": 2, "Dribbles": 1},
+    {"Nom": "Nacho Fernandez", "Equipe": team2, "Buts": 1, "Passes D": 0, "Dribbles": 1}
 ])
 
 # Lineup joueurs PSG et Barça (positions pour scatter plot)

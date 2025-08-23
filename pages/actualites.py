@@ -5,7 +5,6 @@ import webbrowser
 st.set_page_config(
     page_title="Actu SPL",
     page_icon="📰",
-    layout="wide"
 )
 
 # CSS pour le style
