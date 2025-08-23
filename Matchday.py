@@ -76,7 +76,7 @@ with tab1:
                 <img src='https://upload.wikimedia.org/wikipedia/fr/7/70/Logo_Al-Ahli_FC_2025.svg' style='height:36px; vertical-align:middle;'>
             </div>
             <p style='text-align:center'>
-                📅 {match_info['date']} | 🏟️ {match_info['stade']} | 🌡️ 31° | ⚽ {match_info['cote']}
+                📅 {match_info['date']} | 🏟️ {match_info['stade']} | 🌡️ 31° 
             </p>
             """,
             unsafe_allow_html=True
