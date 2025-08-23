@@ -42,16 +42,22 @@ st.title("📰 Actualités SPL")
 
 # Description
 st.markdown("""
-Restez informé des dernières actualités de la Super League en suivant notre compte Twitter officiel.
+Restez informé des dernières actualités de la Super League.
 Vous y trouverez les dernières nouvelles, analyses exclusives et mises à jour en direct.
 """)
 
-# Conteneur pour centrer le bouton
+# Conteneur pour centrer les boutons
 st.markdown('<div class="twitter-container">', unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1, 2, 1])  # centrer les boutons
 
-# Bouton pour rediriger vers Twitter
-if st.button("📱 Suivre @actuSPL sur Twitter", key="twitter_redirect"):
-    webbrowser.open_new_tab("https://twitter.com/actuSPL")
+with col2:
+    b1, b2 = st.columns(2)
+    with b1:
+        if st.button("📱 Suivre @actuSPL sur Twitter", key="twitter_redirect"):
+            webbrowser.open_new_tab("https://twitter.com/actuSPL")
+    with b2:
+        if st.button("▶️ Chaîne YouTube @zacknanifoot", key="youtube_redirect"):
+            webbrowser.open_new_tab("https://www.youtube.com/@zacknanifoot")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -59,9 +65,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 # Section supplémentaire avec informations
-st.subheader("À propos de @actuSPL")
+st.subheader("À propos de @actuSPL et @ZackNaniFoot")
 st.info("""
-Notre compte Twitter **@actuSPL** vous offre:
 - ⚽ Les dernières transferts et rumeurs
 - 📊 Analyses statistiques des matchs
 - 🔥 Highlights et moments forts
@@ -69,9 +74,9 @@ Notre compte Twitter **@actuSPL** vous offre:
 - 📅 Calendriers des matchs à venir
 - 🏆 Classements en direct
 
-Suivez-nous pour ne rien manquer de l'actualité frénétique de la Super League!
+Suivez-nous pour ne rien manquer de l'actualité frénétique de la SPL !
 """)
 
 # Pied de page
 st.markdown("---")
-st.caption("© 2024 SPL Actu - Toutes les actualités de la Super League")
+st.caption("© 2025 SPL Actu - Toutes les actualités de la Super League")
