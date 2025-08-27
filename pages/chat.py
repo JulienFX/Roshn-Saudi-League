@@ -23,17 +23,19 @@ NICKNAME = 'adr_blody'
 TOKEN = 'oauth:sh8qeffr15b97xmbxvfz327d1aemvr'
 CHANNEL = '#zacknani'
 
-# Regex pour détecter les questions valides
+# Regex pour détecter les messages contenants une questions valides avec un ?
 QUESTION_REGEX = re.compile(
     r'(?:^|\s)(\S{2,}\s*\?{1,3}(?:\s|$|[^\w\?]))', 
     flags=re.IGNORECASE
 )
 
-# Regex pour parser les messages IRC
+# Regex pour parser les messages IRC au format -> [HH:MM:SS] username : texte
 LINE_REGEX = re.compile(r'^\[(\d{2}:\d{2}:\d{2})\]\s+([^:]+):\s?(.*)$')
 
 # -----------------------------
 # SESSION STATE
+# Permet de stocker les messages et questions entre les rafraîchissements de la page.
+# utilisation de st.session_state pour éviter de perdre l'historique
 # -----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
